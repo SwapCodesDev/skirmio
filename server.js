@@ -13,6 +13,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
 // Initialize Game Manager
 const gameManager = new GameManager(io);
 
@@ -21,6 +25,7 @@ io.on('connection', (socket) => {
   gameManager.handleConnection(socket);
 });
 
-http.listen(PORT, () => {
+// Explicitly bind to 0.0.0.0 for Railway/Docker
+http.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
