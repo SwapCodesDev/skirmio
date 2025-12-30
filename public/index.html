@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skirmio</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+</head>
+
+<body>
+
+    <!-- Game Container -->
+    <div id="game-container"></div>
+
+    <!-- UI Overlay -->
+    <div id="ui-layer">
+
+        <!-- Main Menu -->
+        <div id="main-menu" class="panel active">
+            <h1 class="game-title">SKIRMIO</h1>
+
+            <div class="menu-buttons">
+                <button id="btn-multiplayer" class="primary-btn">MULTIPLAYER</button>
+                <button id="btn-singleplayer" class="secondary-btn">SINGLE PLAYER</button>
+                <button id="btn-settings" class="tertiary-btn">SETTINGS</button>
+            </div>
+        </div>
+
+        <!-- Submenus (Initially Hidden) -->
+        <div id="multiplayer-panel" class="panel hidden">
+            <h2>MULTIPLAYER</h2>
+            <div class="menu-buttons">
+                <button id="btn-quick-play" class="primary-btn" style="background: #2ed573;">QUICK PLAY</button>
+                <button id="btn-coop" class="secondary-btn">CREATE ROOM</button>
+                <button id="btn-join-multi" class="tertiary-btn">JOIN ROOM</button>
+                <button class="btn-back tertiary-btn">BACK</button>
+            </div>
+        </div>
+
+        <div id="singleplayer-panel" class="panel hidden">
+            <h2>SINGLE PLAYER</h2>
+            <div class="menu-buttons">
+                <button id="btn-training" class="primary-btn" style="background: #2ed573;">TRAINING</button>
+                <button id="btn-survival" class="secondary-btn">SURVIVAL</button>
+                <button class="btn-back tertiary-btn">BACK</button>
+            </div>
+        </div>
+
+        <!-- Settings Panel (Revamped) -->
+        <!-- Settings Menu (Hub) -->
+        <div id="settings-panel" class="panel hidden">
+            <h2>SETTINGS</h2>
+            <div class="menu-buttons">
+                <button id="btn-settings-armory" class="primary-btn">ARMORY</button>
+                <button id="btn-settings-controls" class="secondary-btn">CONTROLS</button>
+                <button id="btn-settings-credits" class="tertiary-btn">CREDITS</button>
+                <button class="btn-back tertiary-btn" data-back-target="main-menu">BACK</button>
+            </div>
+        </div>
+
+        <!-- Armory (Customization) Panel -->
+        <div id="armory-panel" class="panel hidden" style="min-width: 900px; max-width: 95vw;">
+            <h2>ARMORY</h2>
+            <div class="armory-grid">
+                <!-- Preview Section -->
+                <div class="preview-section">
+                    <h3>OPERATIVE PREVIEW</h3>
+                    <div class="preview-box large">
+                        <canvas id="preview-canvas" width="300" height="400"></canvas>
+                    </div>
+                </div>
+
+                <!-- Customization Controls -->
+                <div class="customization-controls">
+                    <div class="form-group full-width">
+                        <label>CODENAME</label>
+                        <input type="text" id="player-name-input" placeholder="Enter Codename">
+                    </div>
+
+                    <div class="scrollable-options">
+                        <!-- Head -->
+                        <div class="control-group">
+                            <label>HEAD</label>
+                            <select id="opt-head-shape">
+                                <option value="human">Human</option>
+                                <option value="square">Square</option>
+                                <option value="round">Round</option>
+                            </select>
+                            <input type="color" id="opt-head-color" value="#ffe0bd" title="Skin Tone">
+                        </div>
+
+                        <!-- Helmet (New) -->
+                        <div class="control-group">
+                            <label>HELMET</label>
+                            <select id="opt-helmet-style">
+                                <option value="none">None</option>
+                                <option value="tactical">Tactical</option>
+                                <option value="cap">Cap</option>
+                                <option value="pilot">Pilot</option>
+                            </select>
+                            <input type="color" id="opt-helmet-color" value="#3a4a35" title="Helmet Color">
+                        </div>
+
+                        <!-- Hair -->
+                        <div class="control-group">
+                            <label>HAIR</label>
+                            <select id="opt-hair-style">
+                                <option value="none">Bald</option>
+                                <option value="short">Short</option>
+                                <option value="buzz">Buzz Cut</option>
+                                <option value="long">Long</option>
+                                <option value="mohawk">Mohawk</option>
+                            </select>
+                            <input type="color" id="opt-hair-color" value="#4a4a4a" title="Hair Color">
+                        </div>
+
+                        <!-- Eyes -->
+                        <div class="control-group">
+                            <label>EYES</label>
+                            <select id="opt-eyes-style">
+                                <option value="normal">Normal</option>
+                                <option value="angry">Angry</option>
+                                <option value="happy">Happy</option>
+                                <option value="scanner">Cyber Scanner</option>
+                            </select>
+                            <input type="color" id="opt-eyes-color" value="#000000" title="Pupil Color">
+                        </div>
+
+                        <!-- Eyebrows -->
+                        <div class="control-group">
+                            <label>BROWS</label>
+                            <select id="opt-eyebrows-style">
+                                <option value="normal">Normal</option>
+                                <option value="thick">Thick</option>
+                                <option value="arched">Arched</option>
+                                <option value="angry">Angry</option>
+                                <option value="none">None</option>
+                            </select>
+                            <input type="color" id="opt-eyebrows-color" value="#000000" title="Color">
+                        </div>
+
+                        <!-- Mouth -->
+                        <div class="control-group">
+                            <label>MOUTH</label>
+                            <select id="opt-mouth-style">
+                                <option value="neutral">Neutral</option>
+                                <option value="smile">Smile</option>
+                                <option value="frown">Frown</option>
+                                <option value="open">Open</option>
+                            </select>
+                            <input type="color" id="opt-mouth-color" value="#000000" title="Color">
+                        </div>
+
+                        <!-- Glasses -->
+                        <div class="control-group">
+                            <label>EYEWEAR</label>
+                            <select id="opt-glasses-style">
+                                <option value="none">None</option>
+                                <option value="shades">Shades</option>
+                                <option value="visor">Visor</option>
+                                <option value="nerd">Glasses</option>
+                            </select>
+                            <input type="color" id="opt-glasses-color" value="#333333" title="Frame/Lens Color">
+                        </div>
+
+                        <!-- Shirt -->
+                        <div class="control-group">
+                            <label>SHIRT</label>
+                            <select id="opt-shirt-style">
+                                <option value="standard">Standard</option>
+                                <option value="tactical">Tactical Vest</option>
+                                <option value="suit">Suit</option>
+                            </select>
+                            <input type="color" id="opt-shirt-color" value="#ff0000" title="Shirt Color">
+                        </div>
+
+                        <!-- Gloves (New) -->
+                        <div class="control-group">
+                            <label>GLOVES</label>
+                            <select id="opt-gloves-style">
+                                <option value="none">None</option>
+                                <option value="fingerless">Fingerless</option>
+                                <option value="tactical">Tactical</option>
+                            </select>
+                            <input type="color" id="opt-gloves-color" value="#222222" title="Glove Color">
+                        </div>
+
+                        <!-- Pants -->
+                        <div class="control-group">
+                            <label>PANTS</label>
+                            <select id="opt-pants-style">
+                                <option value="standard">Standard</option>
+                                <option value="camo">Camo</option>
+                            </select>
+                            <input type="color" id="opt-pants-color" value="#333333" title="Pants Color">
+                        </div>
+
+                        <!-- Boots -->
+                        <div class="control-group">
+                            <label>BOOTS</label>
+                            <select id="opt-boots-style">
+                                <option value="basic">Standard</option>
+                                <option value="heavy">Heavy Duty</option>
+                            </select>
+                            <input type="color" id="opt-boots-color" value="#111111" title="Boots Color">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button id="btn-save-settings" class="primary-btn">CONFIRM & SAVE</button>
+                <button class="btn-back secondary-btn" data-back-target="settings-panel">CANCEL</button>
+            </div>
+        </div>
+
+        <!-- Controls Panel -->
+        <div id="controls-panel" class="panel hidden">
+            <h2>CONTROLS</h2>
+
+            <div class="controls-grid">
+                <!-- Movement -->
+                <div class="key-group">
+                    <div class="key-cap">W</div>
+                    <div class="key-cap">A</div>
+                    <div class="key-cap">S</div>
+                    <div class="key-cap">D</div>
+                </div>
+                <div class="control-desc">
+                    <span>&#10148;</span> MOVEMENT / JETPACK
+                </div>
+
+                <!-- Aim -->
+                <div class="key-group">
+                    <div class="key-cap wide">MOUSE</div>
+                </div>
+                <div class="control-desc">
+                    <span>&#8982;</span> AIM & SHOOT
+                </div>
+
+                <!-- Reload -->
+                <div class="key-group">
+                    <div class="key-cap">R</div>
+                </div>
+                <div class="control-desc">
+                    <span>&#8635;</span> RELOAD WEAPON
+                </div>
+
+                <!-- Scoreboard -->
+                <div class="key-group">
+                    <div class="key-cap wide">TAB</div>
+                </div>
+                <div class="control-desc">
+                    <span>&#9776;</span> SCOREBOARD
+                </div>
+
+                <!-- Menu -->
+                <div class="key-group">
+                    <div class="key-cap wide">ESC</div>
+                </div>
+                <div class="control-desc">
+                    <span>&#10006;</span> PAUSE MENU
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-back tertiary-btn" data-back-target="settings-panel">BACK</button>
+            </div>
+        </div>
+
+        <!-- Credits Panel -->
+        <div id="credits-panel" class="panel hidden">
+            <h2>CREDITS</h2>
+            <div class="credits-text" style="font-size: 1rem; color: #a4b0be; line-height: 1.8;">
+                <p>Developed by <strong>SwapCodes</strong></p>
+                <p>Multiplayer game where you can battle with your friends</p>
+                <p style="margin-top: 15px; font-size: 0.8rem; opacity: 0.7;">v1.0.0</p>
+            </div>
+            <div class="action-buttons">
+                <button class="btn-back tertiary-btn" data-back-target="settings-panel">BACK</button>
+            </div>
+        </div>
+
+        <!-- Create Room Panel -->
+        <div id="create-room-panel" class="panel hidden" style="min-width: 800px; max-width: 95vw;">
+            <h2>TACTICAL BRIEFING</h2>
+            <div class="create-room-grid">
+                <!-- Left Column: Settings -->
+                <div class="settings-column">
+                    <div class="form-group">
+                        <label>OPERATION NAME</label>
+                        <input type="text" id="create-room-name" placeholder="Enter Room Name">
+                    </div>
+                    <div class="form-group">
+                        <label>SECURITY CODE</label>
+                        <input type="password" id="create-room-pass" placeholder="Optional">
+                    </div>
+                    <div class="form-group">
+                        <label>SQUAD SIZE: <span id="player-count-display"
+                                style="color: var(--primary);">4</span></label>
+                        <input type="range" id="create-room-players" min="2" max="16" value="4">
+                    </div>
+                </div>
+
+                <!-- Right Column: Map Selection -->
+                <div class="map-column">
+                    <label style="margin-bottom: 1rem; display: block;">SELECT BATTLEFIELD</label>
+                    <input type="hidden" id="create-room-map" value="outpost">
+                    <div class="map-selection">
+                        <div class="map-card active" data-map="outpost">
+                            <img src="assets/bg_jungle.png" alt="Outpost">
+                            <div class="map-info">
+                                <h3>OUTPOST</h3>
+                                <p>Jungle Warfare</p>
+                            </div>
+                        </div>
+                        <div class="map-card" data-map="catacombs">
+                            <img src="assets/bg_cave.png" alt="Catacombs">
+                            <div class="map-info">
+                                <h3>CATACOMBS</h3>
+                                <p>Underground Ops</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button id="btn-create-confirm" class="primary-btn">ENGAGE</button>
+                <button class="btn-back secondary-btn" data-back-target="multiplayer-panel">RETREAT</button>
+            </div>
+        </div>
+
+        <!-- Join Room Panel -->
+        <div id="join-room-panel" class="panel hidden">
+            <h2>JOIN OPERATION</h2>
+            <div id="manual-join-form">
+                <div class="form-group">
+                    <label>TARGET ROOM</label>
+                    <input type="text" id="join-room-name" placeholder="Room Name">
+                </div>
+                <div class="form-group">
+                    <label>SECURITY CODE</label>
+                    <input type="password" id="join-room-pass" placeholder="(If Required)">
+                </div>
+                <div class="action-buttons">
+                    <button id="btn-join-confirm" class="primary-btn">DEPLOY</button>
+                    <button class="btn-back secondary-btn" data-back-target="multiplayer-panel">RETREAT</button>
+                </div>
+            </div>
+            <div id="room-list">
+                <!-- Room items would go here -->
+            </div>
+            <div class="action-buttons">
+                <button id="btn-refresh-lobbies" class="primary-btn">REFRESH</button>
+                <button id="quick-play-back-btn" class="btn-back secondary-btn"
+                    data-back-target="multiplayer-panel">RETREAT</button>
+            </div>
+        </div>
+
+
+        <!-- Lobby (Waiting) -->
+        <div id="lobby-panel" class="panel hidden">
+            <h2 id="lobby-room-name">OPERATION: ALPHA</h2>
+            <div id="lobby-players">
+                <!-- Player list -->
+            </div>
+            <div class="action-buttons">
+                <button id="btn-start-game" class="primary-btn hidden">START MATCH</button>
+                <button id="btn-ready" class="primary-btn hidden">READY</button>
+                <button id="btn-leave-lobby" class="secondary-btn">ABORT</button>
+            </div>
+        </div>
+
+        <!-- In-Game HUD -->
+        <div id="game-hud" class="hidden">
+            <div class="hud-top-left">
+                <div class="bar-container">
+                    <div id="health-bar" class="bar-fill" style="width: 100%; background: #ff4757;"></div>
+                </div>
+                <div class="bar-label">HEALTH</div>
+            </div>
+
+            <div class="hud-top-right">
+                <div class="bar-container">
+                    <div id="fuel-bar" class="bar-fill" style="width: 100%; background: #2ed573;"></div>
+                </div>
+                <div class="bar-label">JETPACK</div>
+            </div>
+
+            <div class="hud-center-top" id="score-display">
+
+            </div>
+        </div>
+
+        <!-- Scoreboard (Hidden by default, show on Tab) -->
+        <div id="scoreboard-panel" class="hidden">
+            <h3>BATTLE LOG</h3>
+            <table id="score-table">
+                <thead>
+                    <tr>
+                        <th>SOLDIER</th>
+                        <th>KILLS</th>
+                        <th>DEATHS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows -->
+                </tbody>
+            </table>
+            </table>
+        </div>
+
+        <!-- Invite Notification -->
+        <div id="invite-notification" class="notification hidden">
+            <p><span id="inviter-name">Player</span> invited you to a game!</p>
+            <div class="action-buttons" style="margin-top: 10px; display: flex; gap: 10px; justify-content: center;">
+                <button id="btn-accept-invite" class="small-btn primary-btn">ACCEPT</button>
+                <button id="btn-decline-invite" class="small-btn tertiary-btn">IGNORE</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/ui/MenuUI.js" type="module"></script>
+    <script src="js/main.js" type="module"></script>
+</body>
+
+</html>
