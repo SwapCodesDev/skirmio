@@ -10,21 +10,32 @@ class Database {
     }
 
     load() {
-        if (!fs.existsSync(DB_PATH)) {
-            this.save(); // Create if not exists
-        } else {
-            try {
-                const raw = fs.readFileSync(DB_PATH, 'utf8');
-                this.data = JSON.parse(raw);
-            } catch (e) {
-                console.error("Error reading DB", e);
-                this.data = { users: {} };
+        try {
+            if (!fs.existsSync(DB_PATH)) {
+                console.log('Database file not found, creating new one...');
+                this.save(); // Create if not exists
+            } else {
+                try {
+                    const raw = fs.readFileSync(DB_PATH, 'utf8');
+                    this.data = JSON.parse(raw);
+                    console.log('Database loaded successfully.');
+                } catch (e) {
+                    console.error("Error reading DB file, resetting to empty:", e);
+                    this.data = { users: {} };
+                }
             }
+        } catch (err) {
+            console.error("CRITICAL DB LOAD ERROR:", err);
+            this.data = { users: {} };
         }
     }
 
     save() {
-        fs.writeFileSync(DB_PATH, JSON.stringify(this.data, null, 4));
+        try {
+            fs.writeFileSync(DB_PATH, JSON.stringify(this.data, null, 4));
+        } catch (err) {
+            console.error("Error writing to DB:", err);
+        }
     }
 
     getUser(username) {
