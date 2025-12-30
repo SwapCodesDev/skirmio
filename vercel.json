@@ -2,22 +2,16 @@
     "version": 2,
     "builds": [
         {
-            "src": "public/**",
-            "use": "@vercel/static"
-        },
-        {
             "src": "server.js",
-            "use": "@vercel/node"
+            "use": "@vercel/node",
+            "config": {
+                "includeFiles": [
+                    "public/**"
+                ]
+            }
         }
     ],
     "routes": [
-        {
-            "src": "/socket.io/(.*)",
-            "dest": "/server.js"
-        },
-        {
-            "handle": "filesystem"
-        },
         {
             "src": "/(.*)",
             "dest": "/server.js"
