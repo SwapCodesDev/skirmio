@@ -12,11 +12,6 @@ jobs:
     steps:
       - name: Ping Render Web Service
         run: |
-          # Replace the URL below with your live Render URL once deployed.
-          # Alternatively, add a GitHub Repository Secret named RENDER_APP_URL.
-          URL="${{ secrets.RENDER_APP_URL }}"
-          if [ -z "$URL" ]; then
-            URL="https://skirmio.onrender.com/"
-          fi
-          echo "Pinging $URL..."
+          URL="https://skirmio.onrender.com/"
+          echo "Pinging $URL to keep it active..."
           curl -I -s "$URL" | head -n 1
