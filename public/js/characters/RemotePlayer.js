@@ -2,7 +2,7 @@ import { CharacterController } from '../controls/CharacterController.js';
 import { FXController } from '../controls/FXController.js';
 
 export class RemotePlayer {
-    constructor(scene, id, x, y, color, username) {
+    constructor(scene, id, x, y, color, username, physicsGroup) {
         this.scene = scene;
         this.id = id;
         this.username = username || 'Player';
@@ -10,10 +10,10 @@ export class RemotePlayer {
         this.health = 100;
         this.color = color;
 
-        // Visuals
+
         this.container = scene.add.container(x, y);
 
-        // Name Tag
+
         this.nameText = scene.add.text(0, -70, this.username, {
             fontSize: '14px',
             fontFamily: 'Outfit, sans-serif',
@@ -23,12 +23,12 @@ export class RemotePlayer {
         }).setOrigin(0.5);
         this.container.add(this.nameText);
 
-        // Health Bar
+
         this.healthBar = scene.add.graphics();
         this.container.add(this.healthBar);
         this.updateHealthBar();
 
-        // Character Visuals
+
         const visuals = CharacterController.createVisuals(scene, color);
         visuals.container.y = 0;
         this.container.add(visuals.container);
@@ -36,39 +36,42 @@ export class RemotePlayer {
         this.legs = visuals.legs;
         this.pupils = visuals.pupils;
 
-        // Physics Sprite (Invisible, for collisions only)
-        // Replaces Container physics which is unstable
+
+
         this.sprite = scene.physics.add.sprite(x, y, null);
+        if (physicsGroup) {
+            physicsGroup.add(this.sprite);
+        }
         this.sprite.setVisible(false);
         this.sprite.body.setAllowGravity(false);
-        this.sprite.body.setSize(24, 80); // Match Player.js size
+        this.sprite.body.setSize(24, 80);
         this.sprite.body.setOffset(0, -32);
-        this.sprite.setData('id', id); // Logic often checks sprite data
+        this.sprite.setData('id', id);
 
-        // Interpolation Targets
+
         this.targetX = x;
         this.targetY = y;
         this.targetRotation = 0;
 
-        // State
+
         this.jetpackState = 0;
         this.prevJetpackState = 0;
         this.lastHealthData = 100;
 
-        // FX
+
         this.thruster = FXController.createJetpackEmitter(scene);
     }
 
     updateState(data) {
-        // Validation: Verify data integrity before applying
+
         if (!Number.isFinite(data.x) || !Number.isFinite(data.y)) return;
 
         this.targetX = data.x;
         this.targetY = data.y;
 
         if (Number.isFinite(data.rotation)) {
-            // Shortest angle interpolation could go here, but direct set for aim is usually fine
-            // We'll interpolate in update() if we want super smooth, but aim is usually snappy
+
+
             this.targetRotation = data.rotation;
         }
 
@@ -83,29 +86,29 @@ export class RemotePlayer {
     }
 
     update(time, delta) {
-        // 1. Interpolate Position
-        const t = 0.2; // Interpolation factor (tunable)
+
+        const t = 0.2;
         this.container.x = Phaser.Math.Linear(this.container.x, this.targetX, t);
         this.container.y = Phaser.Math.Linear(this.container.y, this.targetY, t);
 
-        // Sync physics sprite to visual container (or vice-versa, but here server drives visual target)
+
         this.sprite.setPosition(this.container.x, this.container.y);
 
-        // 2. Interpolate Rotation
+
         this.hand.setRotation(Phaser.Math.Linear(this.hand.rotation, this.targetRotation, t));
 
-        // 3. Visuals & FX
+
         this.animateVisuals(time);
 
-        // Jetpack Particles (Throttled by update loop naturally, logic handles state)
-        // Using FXController shared logic
+
+
         if (this.jetpackState !== 0) {
             FXController.emitJetpackParticles(this.thruster, this, this.jetpackState);
         }
     }
 
     animateVisuals(time) {
-        // Leg movement based on velocity or position delta
+
         const dx = this.targetX - this.container.x;
         const isMoving = Math.abs(dx) > 1;
         const isFlying = this.jetpackState !== 0;
@@ -142,11 +145,11 @@ export class RemotePlayer {
         const x = -20;
         const y = -60;
 
-        // Background
+
         this.healthBar.fillStyle(0x000000, 0.5);
         this.healthBar.fillRect(x, y, width, height);
 
-        // Health
+
         const healthPct = Phaser.Math.Clamp(this.health / this.maxHealth, 0, 1);
         const color = healthPct > 0.5 ? 0x00ff00 : (healthPct > 0.25 ? 0xffff00 : 0xff0000);
 
@@ -155,41 +158,37 @@ export class RemotePlayer {
     }
 
     fire(data) {
-        // Use pooling from GameScene
+
         const projectiles = this.scene.enemyProjectiles;
         if (!projectiles) return;
 
-        // Get a bullet from the pool
+
         const bullet = projectiles.get(data.x, data.y);
         if (!bullet) return;
 
         bullet.setActive(true).setVisible(true);
         bullet.body.setAllowGravity(false);
-        bullet.body.setSize(8, 8); // Slightly larger hit box for enemies? or standard?
+        bullet.body.setSize(8, 8);
         bullet.body.reset(data.x, data.y);
 
-        // Visuals
-        // If the pool instantiates raw Images/Sprites, we might need to set texture
+
+
         if (!bullet.texture || bullet.texture.key === '__default') {
             bullet.setTexture('bullet');
         }
 
-        // Velocity
+
         this.scene.physics.velocityFromRotation(data.angle, 800, bullet.body.velocity);
 
-        // Auto-kill logic for remote bullets
-        // If we want to be safe, adding a timer similar to Weapon.js
         this.scene.time.delayedCall(2000, () => {
             if (bullet.active) {
-                // If using groupkill, use kill/hide
-                projectiles.killAndHide(bullet);
-                bullet.body.stop();
+                this.scene.killEnemyBullet(bullet);
             }
         });
     }
 
     destroy() {
-        // Proper cleanup of all components
+
         if (this.thruster) this.thruster.destroy();
         if (this.nameText) this.nameText.destroy();
         if (this.healthBar) this.healthBar.destroy();

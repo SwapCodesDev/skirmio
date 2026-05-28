@@ -4,7 +4,7 @@ import { GameScene } from './game.js';
 const socket = io();
 const menu = new MenuUI(socket);
 
-// Game Config
+
 const config = {
     type: Phaser.AUTO,
     parent: 'game-container',
@@ -13,7 +13,7 @@ const config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 0 }, // We might apply custom gravity or use 500
+            gravity: { y: 0 },
             debug: false
         }
     },
@@ -21,23 +21,23 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
-// Start scene paused or waiting?
-// Actually we can pass data to scene start
+
+
 
 menu.onStartGame = (roomData) => {
     console.log("Main.js: Starting Game Scene");
-    // Switch UI
-    document.getElementById('ui-layer').classList.add('hidden-during-game'); // We might want to keep HUD
-    // Switch UI
+
     document.getElementById('ui-layer').classList.add('hidden-during-game');
 
-    // Hide ALL active panels
+    document.getElementById('ui-layer').classList.add('hidden-during-game');
+
+
     document.querySelectorAll('.panel').forEach(p => {
         p.classList.remove('active');
         p.classList.add('hidden');
     });
 
-    // Start Game Scene with data
+
     game.scene.start('GameScene', {
         socket: socket,
         roomName: roomData.name,
@@ -46,11 +46,11 @@ menu.onStartGame = (roomData) => {
     });
 };
 
-// Resize handler
+
 window.addEventListener('resize', () => {
     game.scale.resize(window.innerWidth, window.innerHeight);
 });
 
-// Expose for debugging
+
 window.game = game;
 window.socket = socket;

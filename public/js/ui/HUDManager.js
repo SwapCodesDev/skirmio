@@ -12,7 +12,7 @@ export class HUDManager {
     }
 
     bindEvents() {
-        // Scoreboard toggle
+
         this.scene.input.keyboard.on('keydown-TAB', () => {
             if (this.scoreboardPanel) this.scoreboardPanel.classList.add('active');
         });
@@ -20,7 +20,7 @@ export class HUDManager {
             if (this.scoreboardPanel) this.scoreboardPanel.classList.remove('active');
         });
 
-        // Scene Events
+
         this.scene.events.on('player:health', (data) => {
             this.updateHealth(data.current);
         });

@@ -9,9 +9,9 @@ const PLAYER_CONFIG = {
     jumpForce: -450,
     gravity: 600,
     drag: 500,
-    bodySize: { w: 24, h: 48 }, // Increased height to cover helmet
-    bodyOffset: { x: 0, y: 0 }, // Offset to center relative to 1x1 sprite
-    networkRate: 50 // ms (20 Hz)
+    bodySize: { w: 24, h: 80 },
+    bodyOffset: { x: 0, y: -32 },
+    networkRate: 50
 };
 
 export class Player {
@@ -20,13 +20,13 @@ export class Player {
         this.socket = socket;
         this.id = socket.id;
 
-        // 1. Physics Root (Invisible Sprite)
-        // Using a sprite ensures proper Arcade Physics behavior vs Containers
+
+
         this.sprite = scene.physics.add.sprite(x, y, null);
         this.sprite.setVisible(false);
         this.body = this.sprite.body;
 
-        // Physics Setup
+
         this.body.setCollideWorldBounds(true);
         this.body.setGravityY(PLAYER_CONFIG.gravity);
         this.body.setDragX(PLAYER_CONFIG.drag);
@@ -34,11 +34,11 @@ export class Player {
         this.body.setOffset(PLAYER_CONFIG.bodyOffset.x, PLAYER_CONFIG.bodyOffset.y);
 
 
-        // 2. Visuals Container
+
         this.container = scene.add.container(x, y);
         this.createVisuals(customization);
 
-        // State
+
         this.fuel = 100;
         this.maxFuel = 100;
         this.jetpackState = JetpackState.OFF;
@@ -46,7 +46,7 @@ export class Player {
         this.lastJetpackTime = 0;
         this.lastSyncTime = 0;
 
-        // Input
+
         this.playerInput = {
             left: false, right: false, up: false, jump: false, fire: false
         };
@@ -56,13 +56,13 @@ export class Player {
         this.weapon = new Weapon(scene, this);
         this.setupParticles();
 
-        // Cleanup hook
+
         this.scene.events.once('shutdown', () => this.destroy());
     }
 
     createVisuals(customization) {
         const visuals = CharacterController.createVisuals(this.scene, customization);
-        // Align visual center to container center
+
         visuals.container.y = 0;
 
         this.container.add(visuals.container);
@@ -153,7 +153,7 @@ export class Player {
     }
 
     handleAiming(time) {
-        // Aiming relative to container/sprite center
+
         const pointer = this.scene.input.activePointer;
         const worldPoint = pointer.positionToCamera(this.scene.cameras.main);
 
@@ -161,7 +161,7 @@ export class Player {
         const dy = worldPoint.y - this.container.y;
         const angle = Math.atan2(dy, dx);
 
-        // Face correct direction
+
         this.container.scaleX = dx < 0 ? -1 : 1;
 
         if (this.container.scaleX === -1) {
@@ -199,13 +199,13 @@ export class Player {
             this.legs.right.rotation = Phaser.Math.Linear(this.legs.right.rotation, 0, 0.2);
         }
 
-        const pupilOffset = 2; // Movement range
+        const pupilOffset = 2;
         const px = Math.cos(this.aimAngle) * pupilOffset;
         const py = Math.sin(this.aimAngle) * pupilOffset;
         const facing = this.container.scaleX;
 
-        // Side View Pupil Bases: 7 (Rear) and 15 (Front) - see CharacterController
-        // Y Base: -3
+
+
         if (this.pupils.left && this.pupils.right) {
             this.pupils.left.x = 7 + (px * facing);
             this.pupils.right.x = 15 + (px * facing);
@@ -220,7 +220,7 @@ export class Player {
         if (time - this.lastSyncTime < PLAYER_CONFIG.networkRate) return;
 
         this.socket.emit('player_update', {
-            x: this.container.x, // Sync VIsual/Physics pos (they are same)
+            x: this.container.x,
             y: this.container.y,
             rotation: this.hand.rotation,
             scaleX: this.container.scaleX,
@@ -239,6 +239,9 @@ export class Player {
 
         this.scene.events.emit('player:fuel', 100);
         this.scene.events.emit('player:health', { current: 100, max: 100 });
+        if (this.scene.hudManager) {
+            this.scene.hudManager.updateHealth(100);
+        }
     }
 
     destroy() {

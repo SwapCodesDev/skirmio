@@ -1,8 +1,5 @@
 {
   "name": "skirmio",
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "version": "1.0.0",
   "description": "Skirmio game, using Phaser 3 and Socket.io",
   "main": "server.js",

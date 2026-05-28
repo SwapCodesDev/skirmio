@@ -11,7 +11,7 @@ export class Weapon {
         };
         this.lastFired = 0;
 
-        // Ensure Bullet Texture Exists
+
         if (!scene.textures.exists('bullet')) {
             const g = scene.add.graphics();
             g.fillStyle(0xffffff, 1);
@@ -20,10 +20,21 @@ export class Weapon {
             g.destroy();
         }
 
-        // Projectile Group
+
         this.projectiles = scene.physics.add.group({
             defaultKey: 'bullet',
             maxSize: 50
+        });
+
+
+        this.worldBoundsListener = (body) => {
+            if (body.gameObject && this.projectiles.contains(body.gameObject)) {
+                this.killBullet(body.gameObject);
+            }
+        };
+        scene.physics.world.on('worldbounds', this.worldBoundsListener);
+        scene.events.once('shutdown', () => {
+            scene.physics.world.off('worldbounds', this.worldBoundsListener);
         });
     }
 
@@ -35,7 +46,7 @@ export class Weapon {
         const worldX = matrix.tx;
         const worldY = matrix.ty;
 
-        // Single Source of Truth for Angle
+
         const angle = this.player.aimAngle;
 
         const muzzleLength = 40;
@@ -49,19 +60,9 @@ export class Weapon {
         bullet.body.setAllowGravity(false);
         bullet.body.setSize(4, 4);
 
-        // World Bounds Kill
+
         bullet.setCollideWorldBounds(true);
         bullet.body.onWorldBounds = true;
-
-        // One-time listener for this bullet instance (or could be global, but this ensures it works per bullet)
-        if (!bullet.hasWorldBoundsListener) {
-            bullet.body.world.on('worldbounds', (body) => {
-                if (body.gameObject === bullet) {
-                    this.killBullet(bullet);
-                }
-            });
-            bullet.hasWorldBoundsListener = true;
-        }
 
         this.scene.physics.velocityFromRotation(
             angle,
@@ -74,7 +75,7 @@ export class Weapon {
             this.killBullet(bullet);
         });
 
-        // Apply Visual Recoil
+
         if (this.player.hand && typeof this.player.hand.recoil !== 'undefined') {
             this.player.hand.recoil = -6;
         }

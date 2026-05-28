@@ -44,7 +44,7 @@ export class GameScene extends Phaser.Scene {
         if (!customization.shirt) customization.shirt = { color: localStorage.getItem('mm_color') || '#ffffff' };
         this.customization = customization;
 
-        // Setup Player
+
         this.player = new Player(this, 100, 100, this.socket, this.customization);
         this.physics.add.collider(this.player.sprite, this.platforms);
 
@@ -52,7 +52,7 @@ export class GameScene extends Phaser.Scene {
         this.cameras.main.setZoom(1.0);
         this.cameras.main.setBackgroundColor('#2f3542');
 
-        // Remote Players
+
         this.remotePlayers = {};
         this.enemies = this.physics.add.group();
         this.enemyProjectiles = this.physics.add.group({
@@ -74,11 +74,11 @@ export class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.enemyProjectiles, this.platforms, (bullet, platform) => {
             if (bullet.active) {
                 this.createExplosion(bullet.x, bullet.y, 0xffff00);
-                bullet.destroy();
+                this.killEnemyBullet(bullet);
             }
         });
 
-        this.physics.add.overlap(this.enemyProjectiles, this.player.container, this.handlePlayerHit, null, this);
+        this.physics.add.overlap(this.enemyProjectiles, this.player.sprite, this.handlePlayerHit, null, this);
 
         this.socket.on('player_joined', (data) => this.addRemotePlayer(data));
         this.socket.on('player_moved', (data) => {
@@ -101,12 +101,12 @@ export class GameScene extends Phaser.Scene {
         this.socket.on('player_respawn', (data) => this.handleRespawn(data));
         this.socket.on('score_update', (scores) => this.hudManager.updateScoreboard(scores));
 
-        // Survival Mode Logic - Driven by BotManager
+
         if (this.roomName && this.roomName.startsWith('Survival')) {
-            // Use defaults from BotManager (customized by user)
+
             this.botManager = new BotManager(this);
 
-            // Add collision overlap for BotManager's group
+
             this.physics.add.overlap(this.player.weapon.projectiles, this.botManager.bots, this.handleHit, null, this);
         }
     }
@@ -146,7 +146,8 @@ export class GameScene extends Phaser.Scene {
             data.x ?? 100,
             data.y ?? 100,
             data.customization || { shirt: { color: '#ff0000' } },
-            data.username
+            data.username,
+            this.enemies
         );
 
         if (data.rotation !== undefined) {
@@ -154,7 +155,6 @@ export class GameScene extends Phaser.Scene {
         }
 
         this.remotePlayers[data.id] = rp;
-        this.enemies.add(rp.sprite);
     }
 
     handleHit(projectile, enemyContainer) {
@@ -165,12 +165,12 @@ export class GameScene extends Phaser.Scene {
 
             if (this.remotePlayers[targetId] && this.remotePlayers[targetId].isBot) {
                 const bot = this.remotePlayers[targetId];
-                bot.health = (bot.health || 100) - 10;
-                bot.updateHealth(bot.health);
+                const nextHealth = (bot.health || 100) - 10;
+                bot.updateHealth(nextHealth);
                 if (bot.health <= 0) {
+                    this.socket.emit('bot_killed');
                     bot.destroy();
                     delete this.remotePlayers[targetId];
-                    // Removed onBotKilled(), BotManager handles respawn
                 }
             } else {
                 this.socket.emit('player_hit', { targetId: targetId, damage: 10 });
@@ -178,10 +178,16 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    handlePlayerHit(playerContainer, bullet) {
+    killEnemyBullet(bullet) {
+        if (!bullet.active) return;
+        this.enemyProjectiles.killAndHide(bullet);
+        if (bullet.body) bullet.body.stop();
+    }
+
+    handlePlayerHit(playerSprite, bullet) {
         if (!bullet.active) return;
         this.createExplosion(bullet.x, bullet.y, 0xff0000);
-        bullet.destroy();
+        this.killEnemyBullet(bullet);
         this.socket.emit('player_hit', { targetId: this.socket.id, damage: 5 });
     }
 

@@ -40,7 +40,7 @@ body {
     z-index: 1;
 }
 
-/* UI Layer overlaying the game */
+
 #ui-layer {
     position: absolute;
     top: 0;
@@ -62,12 +62,12 @@ body {
 
 #ui-layer.hidden-during-game .panel {
     pointer-events: auto;
-    /* Allow interaction if panel is mistakenly active */
+
     display: none;
-    /* Force hide menus */
+
 }
 
-/* Panels */
+
 .panel {
     background: var(--panel-bg);
     padding: 2.5rem 4rem;
@@ -100,7 +100,7 @@ body {
     display: none !important;
 }
 
-/* Headers */
+
 h1.game-title {
     font-size: 4rem;
     font-weight: 900;
@@ -118,7 +118,7 @@ h1.game-title .highlight {
     position: relative;
 }
 
-/* Add a cool underline to highlight */
+
 h1.game-title .highlight::after {
     content: '';
     position: absolute;
@@ -153,7 +153,7 @@ h2::after {
     box-shadow: 0 0 10px var(--accent);
 }
 
-/* Buttons */
+
 .menu-buttons,
 .action-buttons {
     display: flex;
@@ -229,7 +229,7 @@ button:hover::before {
     border: 2px solid rgba(255, 255, 255, 0.1);
     color: #888;
     clip-path: none;
-    /* Simple border button */
+
     border-radius: 6px;
 }
 
@@ -238,7 +238,7 @@ button:hover::before {
     color: var(--text-main);
 }
 
-/* Forms */
+
 .form-group {
     margin-bottom: 1.5rem;
     text-align: left;
@@ -274,7 +274,7 @@ select:focus {
     background: rgba(0, 0, 0, 0.6);
 }
 
-/* Armory Revamp */
+
 .armory-grid {
     display: grid;
     grid-template-columns: 350px 1fr;
@@ -297,21 +297,50 @@ select:focus {
     margin: 1rem auto;
     width: 200px;
     height: 300px;
-    background: radial-gradient(circle at center, rgba(50, 50, 50, 0.5), rgba(0, 0, 0, 0.8));
+    background:
+        linear-gradient(rgba(255, 71, 87, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 71, 87, 0.03) 1px, transparent 1px),
+        radial-gradient(circle at center, rgba(255, 71, 87, 0.15) 0%, rgba(10, 10, 15, 0.95) 85%);
+    background-size: 16px 16px, 16px 16px, auto;
     border-radius: 12px;
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 2px dashed rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 71, 87, 0.3);
     position: relative;
     overflow: hidden;
+    box-shadow:
+        0 0 20px rgba(255, 71, 87, 0.15),
+        inset 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+.preview-box::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 12px;
+    height: 12px;
+    border-top: 2px solid var(--primary);
+    border-left: 2px solid var(--primary);
+    opacity: 0.6;
+}
+
+.preview-box::after {
+    content: '';
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 12px;
+    height: 12px;
+    border-bottom: 2px solid var(--primary);
+    border-right: 2px solid var(--primary);
+    opacity: 0.6;
 }
 
 .preview-box.large {
     width: 100%;
     height: 100%;
-    border: none;
-    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8);
 }
 
 #preview-canvas {
@@ -320,7 +349,7 @@ select:focus {
     object-fit: contain;
 }
 
-/* Customization Controls */
+
 .customization-controls {
     display: flex;
     flex-direction: column;
@@ -338,45 +367,106 @@ select:focus {
     padding-right: 10px;
 }
 
-.control-group {
+
+.scrollable-options::-webkit-scrollbar {
+    width: 6px;
+}
+.scrollable-options::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.2);
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+}
+.scrollable-options::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+    box-shadow: 0 0 5px var(--primary);
+}
+.scrollable-options::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dim);
+}
+
+.control-group {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 1.2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
-    gap: 1rem;
+    gap: 1.2rem;
     align-items: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.control-group::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: transparent;
+    transition: background 0.3s;
+}
+
+.control-group:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 71, 87, 0.25);
+    transform: translateX(4px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.control-group:hover::before {
+    background: var(--primary);
 }
 
 .control-group label {
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    transform: rotate(180deg);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
     margin: 0;
-    font-size: 0.6rem;
-    color: var(--primary);
-    border-left: 2px solid var(--primary);
-    padding-left: 5px;
-    height: 40px;
+    min-width: 90px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
 }
 
 .control-group select {
     flex: 1;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    font-size: 0.95rem;
+    padding: 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.control-group select:hover {
+    border-color: rgba(255, 255, 255, 0.25);
     background: rgba(0, 0, 0, 0.5);
-    border: 1px solid #444;
+}
+
+.control-group select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 8px rgba(255, 71, 87, 0.2);
 }
 
 .control-group input[type="color"] {
     -webkit-appearance: none;
     appearance: none;
     border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
     overflow: hidden;
     cursor: pointer;
     background: none;
     padding: 0;
+    transition: transform 0.25s ease;
+}
+
+.control-group input[type="color"]:hover {
+    transform: scale(1.15);
 }
 
 .control-group input[type="color"]::-webkit-color-swatch-wrapper {
@@ -384,14 +474,14 @@ select:focus {
 }
 
 .control-group input[type="color"]::-webkit-color-swatch {
-    border: 2px solid #fff;
-    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
     padding: 0;
 }
 
 .control-group input[type="color"]::-moz-color-swatch {
-    border: 2px solid #fff;
-    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
     padding: 0;
 }
 
@@ -400,7 +490,7 @@ select:focus {
 }
 
 
-/* Lobby */
+
 #lobby-players {
     min-height: 150px;
     background: rgba(0, 0, 0, 0.3);
@@ -426,7 +516,7 @@ select:focus {
     height: 10px;
     border-radius: 50%;
     background: #555;
-    /* Default / Not Ready */
+
     box-shadow: none;
     transition: all 0.3s ease;
 }
@@ -438,12 +528,12 @@ select:focus {
 
 .status-dot.not-ready {
     background: var(--primary);
-    /* Red/Orange to indicate waiting */
+
     box-shadow: 0 0 5px var(--primary);
     opacity: 0.7;
 }
 
-/* Friends List */
+
 .friends-container {
     text-align: left;
 }
@@ -480,7 +570,7 @@ select:focus {
     font-weight: bold;
 }
 
-/* In-Game HUD - Minimalist */
+
 #game-hud {
     position: absolute;
     top: 0;
@@ -544,7 +634,7 @@ select:focus {
     text-shadow: 1px 1px 2px #000;
 }
 
-/* Scoreboard */
+
 #scoreboard-panel {
     position: absolute;
     top: 50%;
@@ -579,7 +669,7 @@ select:focus {
     font-size: 1.1rem;
 }
 
-/* Notifications */
+
 .notification {
     position: absolute;
     top: 30px;
@@ -601,7 +691,7 @@ select:focus {
     pointer-events: none;
 }
 
-/* Range Slider */
+
 input[type=range] {
     -webkit-appearance: none;
     appearance: none;
@@ -626,7 +716,7 @@ input[type=range]::-webkit-slider-runnable-track {
     border-radius: 2px;
 }
 
-/* Scrollbar */
+
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -644,7 +734,7 @@ input[type=range]::-webkit-slider-runnable-track {
     background: #555;
 }
 
-/* Controls Visuals */
+
 .controls-grid {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -706,9 +796,7 @@ input[type=range]::-webkit-slider-runnable-track {
     margin-right: 10px;
 }
 
-/* =========================================
-   Create Room Revamp
-   ========================================= */
+
 .create-room-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;

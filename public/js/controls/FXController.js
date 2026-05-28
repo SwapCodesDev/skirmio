@@ -2,7 +2,7 @@ import { JetpackState } from './JetpackController.js';
 
 export class FXController {
     static createJetpackEmitter(scene) {
-        // Safe fallback for texture
+
         let pKey = 'bullet';
         if (!scene.textures.exists(pKey)) pKey = 'tile_rock';
 
@@ -21,9 +21,9 @@ export class FXController {
     static emitJetpackParticles(emitter, entity, state) {
         if (!emitter || state === JetpackState.OFF) return;
 
-        // Coordinates
-        // Depending on entity structure, we need x, y, scaleX
-        // Entity could be Player or RemotePlayer
+
+
+
         const container = entity.container;
         if (!container) return;
 

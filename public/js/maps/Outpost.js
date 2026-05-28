@@ -6,22 +6,33 @@ export class Outpost {
         this.scene = scene;
         this.builder = new MapBuilder(scene);
 
-        // Layout Data: [x, y, w, h]
         this.layout = [
-            // 1. Ground Floor
             [0, 1400, 2000, 200],
-            // 2. Central structure
-            [400, 1000, 50, 400],
-            [1200, 1000, 50, 400],
-            [400, 1200, 300, 40],
-            [950, 1200, 300, 40],
-            [450, 1000, 800, 40],
-            // 3. Floating Platforms
-            [100, 1100, 200, 40],
-            [1400, 1100, 200, 40],
-            [200, 800, 200, 40],
-            [1300, 800, 200, 40],
-            [730, 600, 250, 40]
+
+            [200, 700, 40, 700],
+            [450, 700, 40, 700],
+            [240, 1200, 210, 30],
+            [240, 950, 210, 30],
+            [200, 700, 290, 40],
+
+            [1510, 700, 40, 700],
+            [1760, 700, 40, 700],
+            [1550, 1200, 210, 30],
+            [1550, 950, 210, 30],
+            [1510, 700, 290, 40],
+
+            [700, 1100, 600, 30],
+            [850, 800, 300, 30],
+            [550, 900, 120, 25],
+            [1330, 900, 120, 25],
+            [650, 500, 700, 30]
+        ];
+
+        this.spawnPoints = [
+            { x: 320, y: 1100 },
+            { x: 1680, y: 1100 },
+            { x: 1000, y: 700 },
+            { x: 1000, y: 1300 }
         ];
     }
 
@@ -34,7 +45,9 @@ export class Outpost {
         this.createPlatforms();
         this.builder.setupBounds(2000, 1600);
 
-        // Cleanup hook
+        this.scene.spawnPoints = this.spawnPoints;
+        this.scene.mapBuilder = this.builder;
+
         this.scene.events.once('shutdown', () => this.destroy());
     }
 
@@ -55,4 +68,3 @@ export class Outpost {
         this.builder.cleanup();
     }
 }
-

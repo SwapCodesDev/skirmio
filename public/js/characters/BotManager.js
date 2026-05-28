@@ -26,21 +26,20 @@ export class BotManager {
     }
 
     spawnBot() {
-        // Random spawn points logic could be improved, but getting x/y as suggested
+
         const x = Phaser.Math.Between(100, 1800);
         const y = 200;
 
         const id = 'bot_' + Phaser.Math.RND.uuid();
-        const bot = new Bot(this.scene, id, x, y, 0xff0000); // Red bots
+        const bot = new Bot(this.scene, id, x, y, 0xff0000, this.bots);
 
-        this.bots.add(bot.sprite);
 
-        // Critical: Register with scene.remotePlayers so GameScene.update can drive AI
-        // and GameScene.handleHit can find the bot instance.
+
+
         this.scene.remotePlayers[id] = bot;
 
         bot.sprite.on('destroy', () => {
-            // Cleanup from scene registry
+
             delete this.scene.remotePlayers[id];
 
             this.scene.time.delayedCall(this.respawnDelay, () => {
