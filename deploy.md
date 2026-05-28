@@ -1,115 +1,66 @@
-# Deployment Guide - Deploying Skirmio on Free Hosting
+# Deployment Guide - Deploying Skirmio on Render.com
 
-Skirmio is a real-time multiplayer game powered by a Node.js backend and Socket.io (WebSockets). Standard static hosting platforms (such as GitHub Pages, Netlify, or static Vercel) **will not work** because Socket.io requires a persistent, running server process to manage game state and bridge player connections.
-
-Below are step-by-step instructions to deploy Skirmio completely free on modern cloud hosting providers that fully support WebSockets.
+Skirmio is a real-time multiplayer game powered by a Node.js backend and Socket.io (WebSockets). This guide details the step-by-step process of deploying the game completely free on **Render.com**, which fully supports WebSockets and automatically syncs with your GitHub repository.
 
 ---
 
 ## Technical Prerequisites (Already Configured)
-The codebase is fully production-ready:
-1. **Dynamic Port Allocation**: [server.js](file:///d:/Projects/skirmio/server.js) dynamically binds to `process.env.PORT || 3000`. This allows the host platform to assign ports dynamically.
-2. **Relative Client Connection**: [main.js](file:///d:/Projects/skirmio/public/js/main.js) connects using `const socket = io();`. Because the frontend is served by the same server hosting the WebSockets, it automatically connects to your production URL without requiring code changes.
+The codebase is fully production-ready for Render:
+1. **Dynamic Port Allocation**: [server.js](file:///d:/Projects/skirmio/server.js) dynamically binds to `process.env.PORT || 3000`. Render will assign a port dynamically at runtime.
+2. **Relative Client Connection**: [main.js](file:///d:/Projects/skirmio/public/js/main.js) connects using `const socket = io();`. Because the frontend is served by the same server hosting the WebSockets, it automatically connects to your Render production URL without requiring code changes.
 
 ---
 
-## Option 1: Render.com (Easiest & Automated)
-Render is a fully free cloud platform that links directly to your GitHub repository and redeploys automatically whenever you push code changes.
+## Step-by-Step Render Deployment Guide
 
-### Step-by-Step Guide:
-1. **Push Code to GitHub**:
-   - Create a new public or private repository on GitHub.
-   - Push your `skirmio` workspace code to your repository.
+### Step 1: Push Code to GitHub
+1. Create a new repository on GitHub (public or private).
+2. Initialize Git in your local project folder and push the code:
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git branch -M main
+   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+   git push -u origin main
+   ```
 
-2. **Create a Render Account**:
-   - Go to [https://render.com](https://render.com) and sign up using your GitHub account.
+### Step 2: Create a Render Account
+1. Visit [https://render.com](https://render.com) and click **Sign Up**.
+2. Sign up using your **GitHub** account to allow easy repository linking.
 
-3. **Deploy a New Web Service**:
-   - In the Render Dashboard, click **New +** and select **Web Service**.
-   - Connect your GitHub repository.
-   - Configure the following settings:
-     - **Name**: `skirmio` (or any unique name).
-     - **Region**: Select the region closest to your player base (e.g., Oregon, Frankfurt, Singapore) for lower ping.
-     - **Branch**: `main` (or your active repository branch).
-     - **Runtime**: `Node`.
-     - **Build Command**: `npm install`
-     - **Start Command**: `npm start`
-     - **Instance Type**: Select the **Free** plan.
+### Step 3: Create a New Web Service
+1. In the Render Dashboard, click **New +** (top right) and select **Web Service**.
+2. Under **Connect a repository**, select your `skirmio` repository.
+3. Configure the following deployment settings:
+   * **Name**: `skirmio` (or any custom name).
+   * **Region**: Select the region geographically closest to you and your players (e.g., Singapore for Asia, Frankfurt for Europe, Oregon/Ohio for the US) to ensure low ping during multiplayer matches.
+   * **Branch**: `main`.
+   * **Runtime**: `Node`.
+   * **Build Command**: `npm install`
+   * **Start Command**: `npm start`
+   * **Instance Type**: Select **Free**.
 
-4. **Verify WebSocket Support**:
-   - Render automatically supports WebSockets out-of-the-box. There is no additional configuration required.
-
-5. **Deploy**:
-   - Click **Create Web Service**. Render will build and deploy your app.
-   - Once completed, your live URL will be shown at the top of the dashboard (e.g., `https://skirmio.onrender.com`).
-
-> [!NOTE]
-> Render's free tier VM spins down (goes to sleep) after 15 minutes of inactivity. When a new player visits the site after it is asleep, it will take about 50 seconds to spin back up, after which game sessions will run smoothly.
-
----
-
-## Option 2: Fly.io (Best Performance for Low Latency)
-Fly.io runs applications on micro-VMs in regions worldwide. It has a generous free tier allowance (3 shared-cpu VMs, 3GB volume storage, and 160GB outbound data) and offers superb, low-latency WebSocket connection performance.
-
-### Step-by-Step Guide:
-1. **Install Flyctl CLI**:
-   - On Windows, open PowerShell and run:
-     ```powershell
-     iwr https://fly.io/install.ps1 -useb | iex
-     ```
-   - Restart your terminal after installation to load the path.
-
-2. **Log In or Sign Up**:
-   - Run the following command and authenticate in your browser:
-     ```bash
-     fly auth signup
-     ```
-   - (Or `fly auth login` if you already have an account).
-
-3. **Initialize App Configuration**:
-   - Navigate to your project directory and run:
-     ```bash
-     fly launch
-     ```
-   - This command scans your project, detects that it is a Node.js application, and creates a configuration file (`fly.toml`) and a `Dockerfile` for you.
-   - **Configuration prompts**:
-     - *Choose an app name*: Press Enter for auto-generated or input a custom name.
-     - *Select organization*: Select your personal organization.
-     - *Select region*: Pick a region closest to your target players.
-     - *Would you like to set up a Postgres database?* No.
-     - *Would you like to set up an Upstash Redis database?* No.
-     - *Would you like to deploy now?* No (we will double-check port bindings first).
-
-4. **Verify Port Mappings in `fly.toml`**:
-   - Open the generated `fly.toml` in your editor. Ensure that the internal port under `[http_service]` is mapped to `3000` (which is the default port in `server.js`):
-     ```toml
-     [http_service]
-       internal_port = 3000
-       force_https = true
-       auto_start_machines = true
-       auto_stop_machines = true
-     ```
-
-5. **Deploy**:
-   - Run:
-     ```bash
-     fly deploy
-     ```
-   - Once the deployment finishes, you can open your live game in the browser by running:
-     ```bash
-     fly open
-     ```
+### Step 4: Deploy Your App
+1. Click **Create Web Service** at the bottom of the page.
+2. Render will automatically fetch your code, run `npm install`, and launch the server.
+3. Once the logs show `Server running on port 3000` and the status changes to `Live`, your game is online.
+4. Your unique production URL will be displayed at the top of the Render dashboard page (e.g., `https://skirmio.onrender.com`).
 
 ---
 
-## Troubleshooting & Latency Optimization
+## Technical Details Specific to Render Free Tier
 
-### Minimizing Latency (Ping)
-Because Skirmio is an action game, lower latency is critical for smooth gameplay.
-- **Select the Right Region**: When deploying on Render or Fly.io, always choose the region geographically closest to your physical location or your player base.
-- **Avoid VPNs**: Turn off active VPNs when playing to prevent routing delays.
+### 1. Cold Start Behavior (Sleeping)
+* **Behavior**: Render’s free tier Web Services go to "sleep" after 15 minutes of inactivity (no visitors).
+* **Impact**: When the next player visits the game site, it takes approximately 50 seconds for the instance to boot back up. 
+* **Gameplay**: Once the server wakes up and the page loads, WebSockets will connect and gameplay will run smoothly.
 
-### Database Persistence
-Currently, Skirmio uses a simple, local JSON-file database (`server/database.json`) to persist profile saves and friends list data.
-* **On Render Free Tier**: The local file system is ephemeral. Any data saved to `database.json` will be reset whenever your Render instance sleeps or redeploys. To make it persistent on Render without paying, you can easily integrate a free database cloud provider like MongoDB Atlas or Supabase.
-* **On Fly.io**: You can attach a free 1GB persistent volume to your VM to keep the `database.json` file safe across restarts.
+### 2. Ephemeral Local File System (Database Persistence)
+* **Behavior**: Render Free Tier instances use an ephemeral file system. Every time the server goes to sleep, restarts, or you redeploy code, any modifications to local files are lost.
+* **Impact on Skirmio**: Local database changes (saves to `server/database.json` containing registered profiles and friends lists) will reset to the original file content.
+* **Free Solution for Full Persistence**:
+  If you want user accounts to persist forever on the free tier, you can integrate a free cloud database:
+  1. **MongoDB Atlas** (Free M0 Sandbox): Integrate the `mongoose` or `mongodb` package in Node.js.
+  2. **Supabase / PostgreSQL** (Free Tier): Use `pg` or an ORM like Prisma.
+  Both MongoDB and Supabase provide excellent free tiers that do not reset and link cleanly with your Render app using environment variables.
